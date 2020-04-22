@@ -14,6 +14,8 @@ import Text from './component/text';
 import Icon from './component/icon';
 import Filter from './component/filter';
 import Shape from './component/shape';
+import Zoom from './component/zoom';
+import Resize from './component/resize';
 import CropperDrawingMode from './drawingMode/cropper';
 import FreeDrawingMode from './drawingMode/freeDrawing';
 import LineDrawingMode from './drawingMode/lineDrawing';
@@ -143,6 +145,7 @@ class Graphics {
          */
         this._handler = {
             onMouseDown: this._onMouseDown.bind(this),
+            onMouseMove: this._onMouseMove.bind(this),
             onObjectAdded: this._onObjectAdded.bind(this),
             onObjectRemoved: this._onObjectRemoved.bind(this),
             onObjectMoved: this._onObjectMoved.bind(this),
@@ -151,7 +154,10 @@ class Graphics {
             onObjectSelected: this._onObjectSelected.bind(this),
             onPathCreated: this._onPathCreated.bind(this),
             onSelectionCleared: this._onSelectionCleared.bind(this),
-            onSelectionCreated: this._onSelectionCreated.bind(this)
+            onSelectionCreated: this._onSelectionCreated.bind(this),
+            onImagePanned: this._onImagePanned.bind(this),
+            onImageResized: this._onImageResized.bind(this),
+            onMouseWheel: this._onMouseWheel.bind(this)
         };
 
         this._setObjectCachingToFalse();
@@ -882,6 +888,8 @@ class Graphics {
         this._register(this._componentMap, new Icon(this));
         this._register(this._componentMap, new Filter(this));
         this._register(this._componentMap, new Shape(this));
+        this._register(this._componentMap, new Zoom(this));
+        this._register(this._componentMap, new Resize(this));
     }
 
     /**
@@ -958,6 +966,7 @@ class Graphics {
         const handler = this._handler;
         canvas.on({
             'mouse:down': handler.onMouseDown,
+            'mouse:move': handler.onMouseMove,
             'object:added': handler.onObjectAdded,
             'object:removed': handler.onObjectRemoved,
             'object:moving': handler.onObjectMoved,
@@ -967,7 +976,9 @@ class Graphics {
             'path:created': handler.onPathCreated,
             'selection:cleared': handler.onSelectionCleared,
             'selection:created': handler.onSelectionCreated,
-            'selection:updated': handler.onObjectSelected
+            'selection:updated': handler.onObjectSelected,
+            'image:panned': handler.onImagePanned,
+            'image:resized': handler.onImageResized
         });
     }
 
@@ -979,6 +990,16 @@ class Graphics {
     _onMouseDown(fEvent) {
         const originPointer = this._canvas.getPointer(fEvent.e);
         this.fire(events.MOUSE_DOWN, fEvent.e, originPointer);
+    }
+
+    /**
+     * "mouse:move" canvas event handler
+     * @param {{target: fabric.Object, e: MouseEvent}} fEvent - Fabric event
+     * @private
+     */
+    _onMouseMove(fEvent) {
+        const originPointer = this._canvas.getPointer(fEvent.e);
+        this.fire(events.MOUSE_MOVE, fEvent.e, originPointer);
     }
 
     /**
@@ -1065,6 +1086,47 @@ class Graphics {
         const params = this.createObjectProperties(target);
 
         this.fire(events.OBJECT_ACTIVATED, params);
+    }
+
+    /**
+     * "image:panned" canvas event handler
+     * @param {{target: fabric.Object, e: MouseEvent}} fEvent - Fabric event
+     * @private
+     */
+    _onImagePanned(fEvent) {
+        const {target} = fEvent;
+        const params = this.createObjectProperties(target);
+
+        this.fire(events.IMAGE_PANNED, params);
+    }
+
+    /**
+     * "image:resized" canvas event handler
+     * @param {{target: fabric.Object, e: MouseEvent}} fEvent - Fabric event
+     * @private
+     */
+    _onImageResized(fEvent) {
+        const {target} = fEvent;
+        const params = this.createObjectProperties(target);
+
+        this.fire(events.IMAGE_RESIZED, params);
+    }
+
+    _onMouseWheel(fEvent) {
+        const delta = fEvent.e.deltaY / 1000;
+        let zoom = this._canvas.getZoom();
+        zoom = zoom + delta;
+        if (zoom > 5) {
+            zoom = 5;
+        }
+        if (zoom < 1) {
+            zoom = 1;
+        }
+        this._canvas.setZoom(zoom);
+        // update vptCoords
+        this._canvas.calcViewportBoundaries();
+        fEvent.e.preventDefault();
+        fEvent.e.stopPropagation();
     }
 
     /**

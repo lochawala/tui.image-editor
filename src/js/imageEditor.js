@@ -15,6 +15,7 @@ const {isUndefined, forEach, CustomEvents} = snippet;
 
 const {
     MOUSE_DOWN,
+    MOUSE_MOVE,
     OBJECT_MOVED,
     OBJECT_SCALED,
     OBJECT_ACTIVATED,
@@ -27,7 +28,9 @@ const {
     ICON_CREATE_END,
     SELECTION_CLEARED,
     SELECTION_CREATED,
-    ADD_OBJECT_AFTER} = events;
+    ADD_OBJECT_AFTER,
+    IMAGE_PANNED,
+    IMAGE_RESIZED} = events;
 
 /**
  * Image filter result
@@ -154,7 +157,6 @@ class ImageEditor {
         if (options.includeUI) {
             const UIOption = options.includeUI;
             UIOption.usageStatistics = options.usageStatistics;
-
             this.ui = new UI(wrapper, UIOption, this.getActions());
             options = this.ui.setUiDefaultSelectionStyle(options);
         }
@@ -188,6 +190,7 @@ class ImageEditor {
         this._handlers = {
             keydown: this._onKeyDown.bind(this),
             mousedown: this._onMouseDown.bind(this),
+            mousemove: this._onMouseMove.bind(this),
             objectActivated: this._onObjectActivated.bind(this),
             objectMoved: this._onObjectMoved.bind(this),
             objectScaled: this._onObjectScaled.bind(this),
@@ -201,7 +204,9 @@ class ImageEditor {
             iconCreateResize: this._onIconCreateResize.bind(this),
             iconCreateEnd: this._onIconCreateEnd.bind(this),
             selectionCleared: this._selectionCleared.bind(this),
-            selectionCreated: this._selectionCreated.bind(this)
+            selectionCreated: this._selectionCreated.bind(this),
+            imagePanned: this._onImagePanned.bind(this),
+            imageResized: this._onImageResized.bind(this)
         };
 
         this._attachInvokerEvents();
@@ -288,6 +293,7 @@ class ImageEditor {
     _attachGraphicsEvents() {
         this._graphics.on({
             [MOUSE_DOWN]: this._handlers.mousedown,
+            [MOUSE_MOVE]: this._handlers.mousemove,
             [OBJECT_MOVED]: this._handlers.objectMoved,
             [OBJECT_SCALED]: this._handlers.objectScaled,
             [OBJECT_ROTATED]: this._handlers.objectRotated,
@@ -300,7 +306,9 @@ class ImageEditor {
             [ICON_CREATE_END]: this._handlers.iconCreateEnd,
             [SELECTION_CLEARED]: this._handlers.selectionCleared,
             [SELECTION_CREATED]: this._handlers.selectionCreated,
-            [ADD_OBJECT_AFTER]: this._handlers.addObjectAfter
+            [ADD_OBJECT_AFTER]: this._handlers.addObjectAfter,
+            [IMAGE_PANNED]: this._handlers.imagePanned,
+            [IMAGE_RESIZED]: this._handlers.imageResized
         });
     }
 
@@ -396,6 +404,37 @@ class ImageEditor {
          * });
          */
         this.fire(events.MOUSE_DOWN, event, originPointer);
+    }
+
+    /**
+     * mouse move event handler
+     * @param {Event} event mouse move event
+     * @param {Object} originPointer origin pointer
+     *  @param {Number} originPointer.x x position
+     *  @param {Number} originPointer.y y position
+     * @private
+     */
+    _onMouseMove(event, originPointer) {
+        /**
+         * The mouse down event with position x, y on canvas
+         * @event ImageEditor#mousemove
+         * @param {Object} event - browser mouse event object
+         * @param {Object} originPointer origin pointer
+         *  @param {Number} originPointer.x x position
+         *  @param {Number} originPointer.y y position
+         * @example
+         * imageEditor.on('mousemove', function(event, originPointer) {
+         *     console.log(event);
+         *     console.log(originPointer);
+         *     if (imageEditor.hasFilter('colorFilter')) {
+         *         imageEditor.applyFilter('colorFilter', {
+         *             x: parseInt(originPointer.x, 10),
+         *             y: parseInt(originPointer.y, 10)
+         *         });
+         *     }
+         * });
+         */
+        this.fire(events.MOUSE_MOVE, event, originPointer);
     }
 
     /**
@@ -1555,6 +1594,86 @@ class ImageEditor {
      */
     setObjectPosition(id, posInfo) {
         return this.execute(commands.SET_OBJECT_POSITION, id, posInfo);
+    }
+
+    /**
+     * @param {string} type - 'zoom' or 'setValue'
+     * @param {number} scale - Zoom settings of image
+     * @param {boolean} reset - Zoom Scale Value
+     * @param {Array} transform - Zoom Transform Value
+     * @returns {Promise<ErrorMsg>}
+     * @private
+     */
+    _zoom(type, scale, reset, transform) {
+        return this.execute(commands.ZOOM_IMAGE, type, scale, reset, transform);
+    }
+
+    /**
+     * Zoom image
+     * @returns {Promise}
+     * @param {object} settings - Additional settings to zoom image
+     * @returns {Promise<ErrorMsg>}
+     */
+    zoom(settings) {
+        return this._zoom('zoom', settings);
+    }
+
+    /**
+     * Set Zoom
+     * @param {number} scale - Zoom settings of image
+     * @param {boolean} reset - Zoom Scale Value
+     * @param {Array} transform - Zoom Transform Value
+     * @returns {Promise<ErrorMsg>}
+     * @example
+    **/
+    setZoom(scale, reset = false, transform = null) {
+        return this._zoom('setZoomValue', scale, reset, transform);
+    }
+
+    /**
+     * @param {object} dimensions - Image Dimensions
+     * @returns {Promise<ErrorMsg>}
+     */
+    resize(dimensions) {
+        return this.execute(commands.RESIZE_IMAGE, 'resize', dimensions);
+    }
+
+    /**
+     * 'imagePanned' event handler
+     * @param {ObjectProps} props - object properties
+     * @private
+     */
+    _onImagePanned(props) {
+        /**
+          * The event when image is panned
+          * @event ImageEditor#imagePanned
+          * @param {ObjectProps} props - object properties
+          * @example
+          * imageEditor.on('imagePanned', function(props) {
+          *     console.log(props);
+          *     console.log(props.type);
+          * });
+        */
+        this.fire(events.IMAGE_PANNED, props);
+    }
+
+    /**
+     * 'imagePanned' event handler
+     * @param {ObjectProps} props - object properties
+     * @private
+     */
+    _onImageResized(props) {
+        /**
+          * The event when image is resized
+          * @event ImageEditor#imageResized
+          * @param {ObjectProps} props - object properties
+          * @example
+          * imageEditor.on('imageResized', function(props) {
+          *     console.log(props);
+          *     console.log(props.type);
+          * });
+        */
+        this.fire(events.IMAGE_RESIZED, props);
     }
 }
 
