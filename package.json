@@ -1,13 +1,13 @@
 {
   "name": "@lochawala/tui-image-editor",
   "author": "Pratik lochawala <lochawalapratik5@gmail.com>",
-  "version": "1.0.0",
+  "version": "1.0.2",
   "license": "MIT",
   "repository": {
     "type": "git",
     "url": "https://github.com/lochawala/tui.image-editor.git"
   },
-  "main": "dist/@lichawala/tui-image-editor.js",
+  "main": "dist/@lochawala/tui-image-editor.js",
   "files": [
     "src",
     "dist",

@@ -255,10 +255,3 @@ export const defaultFilterRangeValus = {
         useDecimal: true
     }
 };
-
-export const defaultZoomRangeValus = {
-    realTimeEvent: true,
-    min: 1,
-    max: 20,
-    value: 1
-};
