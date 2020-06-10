@@ -14,6 +14,7 @@ import {eventNames as events, commandNames as commands, keyCodes, rejectMessages
 const {isUndefined, forEach, CustomEvents} = snippet;
 
 const {
+    MOUSE_UP,
     MOUSE_DOWN,
     MOUSE_MOVE,
     OBJECT_MOVED,
@@ -188,6 +189,7 @@ class ImageEditor {
          */
         this._handlers = {
             keydown: this._onKeyDown.bind(this),
+            mouseup: this._onMouseUp.bind(this),
             mousedown: this._onMouseDown.bind(this),
             mousemove: this._onMouseMove.bind(this),
             objectActivated: this._onObjectActivated.bind(this),
@@ -289,6 +291,7 @@ class ImageEditor {
      */
     _attachGraphicsEvents() {
         this._graphics.on({
+            [MOUSE_UP]: this._handlers.mouseup,
             [MOUSE_DOWN]: this._handlers.mousedown,
             [MOUSE_MOVE]: this._handlers.mousemove,
             [OBJECT_MOVED]: this._handlers.objectMoved,
@@ -368,6 +371,37 @@ class ImageEditor {
         const activeObjectId = this._graphics.getActiveObjectIdForRemove();
 
         this.removeObject(activeObjectId);
+    }
+
+    /**
+     * mouse up event handler
+     * @param {Event} event mouse up event
+     * @param {Object} originPointer origin pointer
+     *  @param {Number} originPointer.x x position
+     *  @param {Number} originPointer.y y position
+     * @private
+     */
+    _onMouseUp(event, originPointer) {
+        /**
+         * The mouse down event with position x, y on canvas
+         * @event ImageEditor#mouseup
+         * @param {Object} event - browser mouse event object
+         * @param {Object} originPointer origin pointer
+         *  @param {Number} originPointer.x x position
+         *  @param {Number} originPointer.y y position
+         * @example
+         * imageEditor.on('mouseup', function(event, originPointer) {
+         *     console.log(event);
+         *     console.log(originPointer);
+         *     if (imageEditor.hasFilter('colorFilter')) {
+         *         imageEditor.applyFilter('colorFilter', {
+         *             x: parseInt(originPointer.x, 10),
+         *             y: parseInt(originPointer.y, 10)
+         *         });
+         *     }
+         * });
+         */
+        this.fire(events.MOUSE_UP, event, originPointer);
     }
 
     /**

@@ -142,6 +142,7 @@ class Graphics {
          * @private
          */
         this._handler = {
+            onMouseUp: this._onMouseUp.bind(this),
             onMouseDown: this._onMouseDown.bind(this),
             onMouseMove: this._onMouseMove.bind(this),
             onObjectAdded: this._onObjectAdded.bind(this),
@@ -958,6 +959,7 @@ class Graphics {
         const canvas = this._canvas;
         const handler = this._handler;
         canvas.on({
+            'mouse:up': handler.onMouseUp,
             'mouse:down': handler.onMouseDown,
             'mouse:move': handler.onMouseMove,
             'object:added': handler.onObjectAdded,
@@ -971,6 +973,16 @@ class Graphics {
             'selection:created': handler.onSelectionCreated,
             'selection:updated': handler.onObjectSelected
         });
+    }
+
+    /**
+     * "mouse:up" canvas event handler
+     * @param {{target: fabric.Object, e: MouseEvent}} fEvent - Fabric event
+     * @private
+     */
+    _onMouseUp(fEvent) {
+        const originPointer = this._canvas.getPointer(fEvent.e);
+        this.fire(events.MOUSE_UP, fEvent.e, originPointer);
     }
 
     /**
