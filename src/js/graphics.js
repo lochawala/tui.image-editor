@@ -10,6 +10,7 @@ import Flip from './component/flip';
 import Rotation from './component/rotation';
 import FreeDrawing from './component/freeDrawing';
 import Line from './component/line';
+import Arrow from './component/arrow';
 import Text from './component/text';
 import Icon from './component/icon';
 import Filter from './component/filter';
@@ -17,6 +18,7 @@ import Shape from './component/shape';
 import CropperDrawingMode from './drawingMode/cropper';
 import FreeDrawingMode from './drawingMode/freeDrawing';
 import LineDrawingMode from './drawingMode/lineDrawing';
+import ArrowDrawingMode from './drawingMode/arrowDrawing';
 import ShapeDrawingMode from './drawingMode/shape';
 import TextDrawingMode from './drawingMode/text';
 import {getProperties, Promise} from './util';
@@ -865,6 +867,7 @@ class Graphics {
         this._register(this._drawingModeMap, new CropperDrawingMode());
         this._register(this._drawingModeMap, new FreeDrawingMode());
         this._register(this._drawingModeMap, new LineDrawingMode());
+        this._register(this._drawingModeMap, new ArrowDrawingMode());
         this._register(this._drawingModeMap, new ShapeDrawingMode());
         this._register(this._drawingModeMap, new TextDrawingMode());
     }
@@ -880,6 +883,7 @@ class Graphics {
         this._register(this._componentMap, new Rotation(this));
         this._register(this._componentMap, new FreeDrawing(this));
         this._register(this._componentMap, new Line(this));
+        this._register(this._componentMap, new Arrow(this));
         this._register(this._componentMap, new Text(this));
         this._register(this._componentMap, new Icon(this));
         this._register(this._componentMap, new Filter(this));

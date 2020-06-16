@@ -24,7 +24,8 @@ export const componentNames = keyMirror(
     'TEXT',
     'ICON',
     'FILTER',
-    'SHAPE'
+    'SHAPE',
+    'ARROW'
 );
 
 /**
@@ -115,7 +116,8 @@ export const drawingModes = keyMirror(
     'FREE_DRAWING',
     'LINE_DRAWING',
     'TEXT',
-    'SHAPE'
+    'SHAPE',
+    'ARROW_DRAWING'
 );
 
 /**
