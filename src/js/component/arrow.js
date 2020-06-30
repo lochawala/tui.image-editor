@@ -117,7 +117,9 @@ class Arrow extends Component {
             evented: false
         });
 
-        this._line.set(fObjectOptions.SELECTION_STYLE);
+        const {SELECTION_STYLE} = fObjectOptions;
+        SELECTION_STYLE.cornerSize = SELECTION_STYLE.cornerSize + this._width;
+        this._line.set(SELECTION_STYLE);
 
         canvas.add(this._line).setActiveObject(this._line);
 

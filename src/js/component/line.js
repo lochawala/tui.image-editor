@@ -117,6 +117,8 @@ class Line extends Component {
             evented: false
         });
 
+        const {SELECTION_STYLE} = fObjectOptions;
+        SELECTION_STYLE.cornerSize = SELECTION_STYLE.cornerSize + this._width;
         this._line.set(fObjectOptions.SELECTION_STYLE);
 
         canvas.add(this._line);

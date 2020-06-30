@@ -256,7 +256,9 @@ export default class Shape extends Component {
      * @private
      */
     _extendOptions(options) {
-        const selectionStyles = fObjectOptions.SELECTION_STYLE;
+        const {SELECTION_STYLE} = fObjectOptions;
+        SELECTION_STYLE.cornerSize = SELECTION_STYLE.cornerSize + (Number(options.strokeWidth) || DEFAULT_WIDTH);
+        const selectionStyles = SELECTION_STYLE;
 
         options = extend({}, SHAPE_INIT_OPTIONS, this._options, selectionStyles, options);
 
