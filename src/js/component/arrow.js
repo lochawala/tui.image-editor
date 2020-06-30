@@ -5,8 +5,8 @@
 import fabric from 'fabric';
 import Component from '../interface/component';
 import {eventNames, componentNames, fObjectOptions} from '../consts';
-// import LineArrow from '../extension/lineArrow';
-// fabric.LineArrow = LineArrow;
+import LineArrow from '../extension/lineArrow';
+fabric.LineArrow = LineArrow;
 /**
  * Arrow
  * @class Arrow
@@ -102,39 +102,6 @@ class Arrow extends Component {
         canvas.off('mouse:down', this._listeners.mousedown);
     }
 
-    // eslint-disable-next-line complexity
-    _FabricCalcArrowAngle(x1, y1, x2, y2) {
-        let angle = 0;
-        const x = x2 - x1;
-        const y = y2 - y1;
-        if (x === 0) {
-            // eslint-disable-next-line no-nested-ternary
-            angle = y === 0 ? 0 : y > 0 ? Math.PI / 2 : (Math.PI * 3) / 2;
-        } else if (y === 0) {
-            angle = x > 0 ? 0 : Math.PI;
-        } else {
-            // eslint-disable-next-line no-nested-ternary
-            angle = x < 0 ? Math.atan(y / x) + Math.PI : y < 0 ? Math.atan(y / x) + (2 * Math.PI) : Math.atan(y / x);
-        }
-
-        return (angle * 180) / (Math.PI + 90);
-    }
-
-    generateUUID() {
-        let d = new Date().getTime();
-        if (window.performance && typeof window.performance.now === 'function') {
-            d += performance.now(); // use high-precision timer if available
-        }
-        const uuid = 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, c => {
-            const r = (d + (Math.random() * 16)) % 16 | 0;
-            d = Math.floor(d / 16);
-
-            return (c === 'x' ? r : (r & (0x3 | 0x8))).toString(16);
-        });
-
-        return uuid;
-    }
-
     /**
      * Mousedown event handler in fabric canvas
      * @param {{target: fabric.Object, e: MouseEvent}} fEvent - Fabric event object
@@ -144,40 +111,15 @@ class Arrow extends Component {
         const canvas = this.getCanvas();
         const pointer = canvas.getPointer(fEvent.e);
         const points = [pointer.x, pointer.y, pointer.x, pointer.y];
-        this._line = new fabric.Line(points, {
+        this._line = new fabric.LineArrow(points, {
             stroke: this._oColor.toRgba(),
             strokeWidth: this._width,
-            uuid: this.generateUUID(),
-            type: 'arrow',
             evented: false
         });
 
         this._line.set(fObjectOptions.SELECTION_STYLE);
 
-        const centerX = (this._line.x1 + this._line.x2) / 2;
-        const centerY = (this._line.y1 + this._line.y2) / 2;
-        this._deltaX = this._line.left - centerX;
-        this._deltaY = this._line.top - centerY;
-
-        this._triangle = new fabric.Triangle({
-            stroke: this._oColor.toRgba(),
-            strokeWidth: this._width,
-            evented: false,
-            left: this._line.get('x1') + this._deltaX,
-            top: this._line.get('y1') + this._deltaY,
-            originX: 'center',
-            originY: 'center',
-            selectable: false,
-            pointType: 'arrow_start',
-            angle: -45,
-            width: 20,
-            height: 20,
-            fill: 'red',
-            id: 'arrow_triangle',
-            uuid: this._line.uuid
-        });
-        this._activeObj = this._line;
-        canvas.add(this._line, this._triangle).setActiveObject(this._line);
+        canvas.add(this._line).setActiveObject(this._line);
 
         canvas.on({
             'mouse:move': this._listeners.mousemove,
@@ -193,22 +135,13 @@ class Arrow extends Component {
     _onFabricMouseMove(fEvent) {
         const canvas = this.getCanvas();
         const pointer = canvas.getPointer(fEvent.e);
-        // const activeObj = canvas.getActiveObject();
-        // activeObj.set({
-        //     x2: pointer.x,
-        //     y2: pointer.y
-        // });
-        this._line.set({
+        const activeObj = canvas.getActiveObject();
+        activeObj.set({
             x2: pointer.x,
             y2: pointer.y
         });
-        this._triangle.set({
-            'left': pointer.x + this._deltaX,
-            'top': pointer.y + this._deltaY,
-            'angle': this._FabricCalcArrowAngle(this._line.x1, this._line.y1, this._line.x2, this._line.y2)
-        });
 
-        // activeObj.setCoords();
+        activeObj.setCoords();
 
         canvas.renderAll();
     }
@@ -220,23 +153,11 @@ class Arrow extends Component {
      */
     _onFabricMouseUp() {
         const canvas = this.getCanvas();
-        // const params_line = this.graphics.createObjectProperties(this._line);
-        // const params_triangle = this.graphics.createObjectProperties(this._triangle);
-        const group = new fabric.Group([this._line, this._triangle], {
-            lockScalingFlip: true,
-            typeOfGroup: 'arrow',
-            userLevel: 1,
-            name: 'my_ArrowGroup',
-            uuid: this._activeObj.uuid,
-            type: 'arrow'
-        });
-        canvas.remove(this._line, this._triangle);
-        const params = this.graphics.createObjectProperties(group);
+        const params = this.graphics.createObjectProperties(this._line);
 
         this.fire(eventNames.ADD_OBJECT, params);
 
         this._line = null;
-        this._triangle = null;
 
         canvas.off({
             'mouse:move': this._listeners.mousemove,

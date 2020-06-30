@@ -39,20 +39,22 @@ const LineArrow = fabric.util.createClass(fabric.Line, /** @lends Convolute.prot
         if (this.width === 0 || this.height === 0 || !this.visible) return;
 
         ctx.save();
-
+        // to scale arrow head to line width for perfect center arrow
+        const {lineWidth} = ctx;
         const xDiff = this.x2 - this.x1;
         const yDiff = this.y2 - this.y1;
         const angle = Math.atan2(yDiff, xDiff);
         ctx.translate((this.x2 - this.x1) / 2, (this.y2 - this.y1) / 2);
         ctx.rotate(angle);
         ctx.beginPath();
-
+        ctx.lineWidth = this.width;
         // move 10px in front of line to start the arrow so it does not have the square line end showing in front (0,0)
-
-        ctx.moveTo(10, 0);
-        ctx.lineTo(-20, 15);
-        ctx.lineTo(-20, -15);
+        ctx.moveTo((10 + lineWidth), 0);
+        ctx.lineTo(-(25 + lineWidth), (15 + lineWidth));
+        ctx.lineTo(-(25 + lineWidth), -(15 + lineWidth));
         ctx.closePath();
+        ctx.fillStyle = this.stroke;
+        ctx.fill();
         ctx.fillStyle = this.stroke;
         ctx.fill();
 
